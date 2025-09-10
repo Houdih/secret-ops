@@ -14,4 +14,3 @@
 # Messenger pour les événements : MissionStarted, AgentDied...
     symfony/messenger
 
-

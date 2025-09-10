@@ -7,15 +7,25 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MessageRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Enum\MessageReason;
 use ApiPlatform\Metadata\{ApiResource, Get, GetCollection, Post};
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
+#[ORM\Table(
+    name: 'message',
+    indexes: [
+        new ORM\Index(name: 'idx_message_recipient', columns: ['recipient_id']),
+        new ORM\Index(name: 'idx_message_author', columns: ['author_id']),
+        new ORM\Index(name: 'idx_message_created_at', columns: ['created_at']),
+    ]
+)]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['message:list']]),
     new Get(normalizationContext: ['groups' => ['message:read']]),
     new Post(denormalizationContext: ['groups' => ['message:write']], normalizationContext: ['groups' => ['message:read']]),
 ])]
-#[ORM\HasLifecycleCallbacks]
 class Message
 {
     use DateTrait;
@@ -25,22 +35,27 @@ class Message
     private ?int $id = null;
 
     #[ORM\Column(length: 140)]
+    #[Assert\NotBlank]
     #[Groups(['message:list', 'message:read', 'message:write'])]
     private string $title;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank]
     #[Groups(['message:read', 'message:write'])]
     private string $body;
 
-    #[ORM\Column(length: 80, nullable: true)]
+    #[ORM\Column(enumType: MessageReason::class, nullable: true)]
     #[Groups(['message:read', 'message:write'])]
-    private ?string $reason = null; // "MISSION_STARTED", "AGENT_KIA", ...
+    private ?MessageReason $reason = null;
 
-    #[ORM\ManyToOne] #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
     #[Groups(['message:read', 'message:write'])]
     private Agent $recipient;
 
-    #[ORM\ManyToOne] // nullable: messages système lors des events
+    // author nullable : permet des messages “système”
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['message:read'])]
     private ?Agent $author = null;
 

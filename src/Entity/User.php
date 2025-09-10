@@ -38,6 +38,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => true])] 
     private bool $isActive = true;
 
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Agent::class)]
+    private ?Agent $agent = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -129,5 +132,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isActive = $isActive;
 
         return $this;
+    }
+
+    public function getAgent(): ?Agent
+    {
+        return $this->agent;
     }
 }

@@ -9,9 +9,20 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Validator as AppAssert; 
+use App\Validator as AppAssert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 
 #[ORM\Entity(repositoryClass: AgentRepository::class)]
+#[ORM\Table(
+    name: 'agent',
+    indexes: [
+        new ORM\Index(name: 'idx_agent_status', columns: ['status']),
+        new ORM\Index(name: 'idx_agent_current_country', columns: ['current_country_id']),
+    ]
+)]
+#[UniqueEntity(fields: ['codename'], message: 'Ce nom de code est déjà pris.')]
+#[UniqueEntity(fields: ['user'], message: 'Un utilisateur ne peut être lié qu’à un seul agent.')]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['agent:list']]),
     new Get(normalizationContext: ['groups' => ['agent:read']]),
@@ -34,10 +45,12 @@ class Agent
     private AgentStatus $status = AgentStatus::AVAILABLE;
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\PositiveOrZero]
     #[Groups(['agent:read', 'agent:write'])]
     private int $yearsOfExperience = 0;
 
     #[ORM\Column(type: 'date_immutable')]
+    #[Assert\NotNull]
     #[Groups(['agent:read', 'agent:write'])]
     private \DateTimeImmutable $enrolmentDate;
 
@@ -49,6 +62,10 @@ class Agent
     #[ORM\ManyToOne(targetEntity: Country::class)]
     #[Groups(['agent:read', 'agent:write', 'mission:read'])]
     private ?Country $currentCountry = null;
+
+    #[ORM\OneToOne(inversedBy: 'agent', targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE', unique: true)]
+    private User $user;
 
     public function getId(): ?int
     {
@@ -124,6 +141,16 @@ class Agent
     {
         $this->currentCountry = $currentCountry;
 
+        return $this;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
         return $this;
     }
 }

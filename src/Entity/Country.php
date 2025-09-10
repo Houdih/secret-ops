@@ -9,6 +9,12 @@ use App\Enum\MissionDanger;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CountryRepository::class)]
+#[ORM\Table(
+    name: 'country',
+    indexes: [
+        new ORM\Index(name: 'idx_country_name', columns: ['name'])
+    ]
+)]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['country:list']]),
     new Get(normalizationContext: ['groups' => ['country:read']]),
@@ -25,7 +31,7 @@ class Country
     #[Groups(['country:list', 'country:read', 'country:write', 'mission:read', 'agent:read'])]
     private string $name;
 
-    // Danger dérivé : exposé en lecture (calculé par provider simple côté repo/service si besoin)
+    // Danger non persisté : servi via un State Provider (max danger des missions actives)
     #[Groups(['country:read'])]
     private ?MissionDanger $danger = null;
 

@@ -5,7 +5,7 @@ namespace App\Enum;
 enum AgentStatus: string
 {
     case AVAILABLE = 'AVAILABLE';
-    case ON_MISSION = 'ON_MISSION';
+    case ON_MISSION = 'ON MISSION';
     case RETIRED = 'RETIRED';
     case KIA = 'KIA';
 }

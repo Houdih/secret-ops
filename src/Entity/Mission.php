@@ -15,6 +15,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 use App\Validator as AppAssert;
 
 #[ORM\Entity(repositoryClass: MissionRepository::class)]
+#[ORM\Table(
+    name: 'mission',
+    indexes: [
+        new ORM\Index(name: 'idx_mission_country', columns: ['country_id']),
+        new ORM\Index(name: 'idx_mission_status', columns: ['status']),
+        new ORM\Index(name: 'idx_mission_danger', columns: ['danger']),
+        new ORM\Index(name: 'idx_mission_start', columns: ['start_date']),
+    ]
+)]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['mission:list']]),
     new Get(normalizationContext: ['groups' => ['mission:read']]),
@@ -57,17 +66,25 @@ class Mission
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     #[Groups(['mission:read', 'mission:write'])]
+    #[Assert\Expression(
+        "this.getStartDate() === null or this.getEndDate() === null or this.getEndDate() >= this.getStartDate()",
+        message: "endDate doit être postérieure ou égale à startDate."
+    )]
     private ?\DateTimeImmutable $endDate = null;
 
-    #[ORM\ManyToOne] #[Assert\NotNull]
+    #[ORM\ManyToOne]
+    #[Assert\NotNull]
     #[Groups(['mission:list', 'mission:read', 'mission:write'])]
     private Country $country;
 
     #[ORM\ManyToMany(targetEntity: Agent::class)]
+    #[ORM\JoinTable(name: 'mission_agent')]
+    #[ORM\JoinColumn(name: 'mission_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'agent_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[Groups(['mission:read', 'mission:write'])]
     private Collection $agents;
 
-    #[ORM\OneToOne(mappedBy: 'mission', targetEntity: MissionResult::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToOne(mappedBy: 'mission', targetEntity: MissionResult::class, cascade: ['persist', 'remove'])]
     #[Groups(['mission:read'])]
     private ?MissionResult $result = null;
 
@@ -184,19 +201,11 @@ class Mission
 
     public function setResult(?MissionResult $result): static
     {
-        if ($this->result === $result) {
-            return $this;
+        // On maintient la bidirectionnalité sans tenter de rendre la FK nulle (non-nullable)
+        $this->result = $result;
+        if ($result && $result->getMission() !== $this) {
+            $result->setMission($this);
         }
-
-        $old = $this->result;      // on mémorise l'ancien
-        $this->result = $result;   // on remplace
-
-        if ($result !== null && $result->getMission() !== $this) {
-            $result->setMission($this); // maintenir la bidirectionnalité
-        }
-
-        // Ne PAS appeler $old->setMission(null) (non-nullable)
-        // La suppression de $old se fait au niveau service.
         return $this;
     }
 

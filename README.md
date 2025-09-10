@@ -2,7 +2,7 @@
     composer create-project symfony/skeleton secret-ops
 
 # Ajouter les composants web utiles (HTTP, serializer, validator…)
-    symfony/framework-bundle symfony/orm-pack symfony/serializer-pack symfony/validator
+    symfony/framework-bundle symfony/orm-pack symfony/serializer-pack symfony/validator symfony/asset
     --dev symfony/maker-bundle
 
 # Installer API Platform (core)

@@ -12,14 +12,9 @@ use App\Enum\MessageReason;
 use ApiPlatform\Metadata\{ApiResource, Get, GetCollection, Post};
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-#[ORM\Table(
-    name: 'message',
-    indexes: [
-        new ORM\Index(name: 'idx_message_recipient', columns: ['recipient_id']),
-        new ORM\Index(name: 'idx_message_author', columns: ['author_id']),
-        new ORM\Index(name: 'idx_message_created_at', columns: ['created_at']),
-    ]
-)]
+#[ORM\Index(name: 'idx_message_recipient', columns: ['recipient_id'])]
+#[ORM\Index(name: 'idx_message_author', columns: ['author_id'])]
+#[ORM\Index(name: 'idx_message_created_at', columns: ['created_at'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['message:list']]),

@@ -14,15 +14,9 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 
 #[ORM\Entity(repositoryClass: AgentRepository::class)]
-#[ORM\Table(
-    name: 'agent',
-    indexes: [
-        new ORM\Index(name: 'idx_agent_status', columns: ['status']),
-        new ORM\Index(name: 'idx_agent_current_country', columns: ['current_country_id']),
-    ]
-)]
 #[UniqueEntity(fields: ['codename'], message: 'Ce nom de code est déjà pris.')]
 #[UniqueEntity(fields: ['user'], message: 'Un utilisateur ne peut être lié qu’à un seul agent.')]
+#[ORM\Index(name: 'idx_agent_status', columns: ['status'])]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['agent:list']]),
     new Get(normalizationContext: ['groups' => ['agent:read']]),
@@ -40,7 +34,7 @@ class Agent
     #[Assert\NotBlank]
     private string $codename;
 
-    #[ORM\Column(enumType: AgentStatus::class)]
+    #[ORM\Column(length: 32, enumType: AgentStatus::class)]
     #[Groups(['agent:read', 'agent:write'])]
     private AgentStatus $status = AgentStatus::AVAILABLE;
 

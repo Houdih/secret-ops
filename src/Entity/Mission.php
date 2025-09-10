@@ -15,15 +15,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 use App\Validator as AppAssert;
 
 #[ORM\Entity(repositoryClass: MissionRepository::class)]
-#[ORM\Table(
-    name: 'mission',
-    indexes: [
-        new ORM\Index(name: 'idx_mission_country', columns: ['country_id']),
-        new ORM\Index(name: 'idx_mission_status', columns: ['status']),
-        new ORM\Index(name: 'idx_mission_danger', columns: ['danger']),
-        new ORM\Index(name: 'idx_mission_start', columns: ['start_date']),
-    ]
-)]
+#[ORM\Index(name: 'idx_mission_country', columns: ['country_id'])]
+#[ORM\Index(name: 'idx_mission_status', columns: ['status'])]
+#[ORM\Index(name: 'idx_mission_danger', columns: ['danger'])]
+#[ORM\Index(name: 'idx_mission_start', columns: ['start_date'])]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['mission:list']]),
     new Get(normalizationContext: ['groups' => ['mission:read']]),

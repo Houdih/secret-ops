@@ -9,12 +9,7 @@ use App\Enum\MissionDanger;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CountryRepository::class)]
-#[ORM\Table(
-    name: 'country',
-    indexes: [
-        new ORM\Index(name: 'idx_country_name', columns: ['name'])
-    ]
-)]
+#[ORM\Index(name: 'idx_country_name', columns: ['name'])]
 #[ApiResource(operations: [
     new GetCollection(normalizationContext: ['groups' => ['country:list']]),
     new Get(normalizationContext: ['groups' => ['country:read']]),

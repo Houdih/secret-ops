@@ -2,17 +2,22 @@
 
 namespace App\State;
 
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Mission;
 use App\Enum\MissionStatus;
 use App\Message\MissionStarted;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final class MissionStartProcessor implements ProcessorInterface
 {
-    public function __construct(private ProcessorInterface $persistProcessor, private MessageBusInterface $bus) {}
-
+    public function __construct(
+        #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
+        private ProcessorInterface $persistProcessor,
+        private MessageBusInterface $bus
+    ) {}
+    
     public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         \assert($data instanceof Mission);
